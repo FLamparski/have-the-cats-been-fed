@@ -12,3 +12,7 @@ serde_json = "1.0.113"
 tokio = { version = "1.36.0", features = ["full"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+deadpool-diesel = { version = "0.4.1", features = ["sqlite"] }
+diesel = { version = "2", features = ["sqlite", "time"] }
+diesel_migrations = "2"
+time = { version = "0.3", features = ["serde-human-readable"] }
