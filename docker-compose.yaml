@@ -32,3 +32,14 @@ services:
       - "traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/backend"
       - "traefik.http.services.backend-svc.loadbalancer.server.port=8080"
     restart: unless-stopped
+
+  frontend:
+    build: frontend
+    container_name: "frontend"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.rule=!PathPrefix(`/backend`)"
+      - "traefik.http.routers.frontend.service=frontend-svc"
+      - "traefik.http.services.frontend-svc.loadbalancer.server.port=3000"
+    restart: unless-stopped
