@@ -16,3 +16,5 @@ deadpool-diesel = { version = "0.4.1", features = ["sqlite"] }
 diesel = { version = "2", features = ["sqlite", "time"] }
 diesel_migrations = "2"
 time = { version = "0.3", features = ["serde-human-readable"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["timeout", "trace"] }

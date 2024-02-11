@@ -5,8 +5,11 @@ use axum::{
 use diesel::prelude::*;
 use diesel::sqlite::Sqlite;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use std::net::SocketAddr;
+use std::{net::SocketAddr, time::Duration};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tokio::signal;
+use tower_http::timeout::TimeoutLayer;
+use tower_http::trace::TraceLayer;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 
@@ -66,13 +69,17 @@ async fn main() {
         .route("/", get(root))
         .route("/log", get(get_logs))
         .route("/log", post(add_log))
+        .layer((
+            TraceLayer::new_for_http(),
+            TimeoutLayer::new(Duration::from_secs(5))
+        ))
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], 8080)))
         .await
         .unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).with_graceful_shutdown(shutdown_signal()).await.unwrap();
 }
 
 async fn root() -> &'static str {
@@ -115,4 +122,29 @@ where
     E: std::error::Error,
 {
     (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
+}
+
+/// Utility to implement ctrl-c shutdown
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }
