@@ -9,3 +9,4 @@ LABEL description="Backend for the app that lets everyone know when the cats hav
       org.opencontainers.image.authors="filip@filipwieland.com"
 COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/backend /app
 ENTRYPOINT [ "/app" ]
+EXPOSE 8080
