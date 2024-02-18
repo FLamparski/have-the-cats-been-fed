@@ -1,0 +1,45 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "proxy"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:4050"
+      - "8080:4051"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+
+  backend:
+    build: backend
+    container_name: "backend"
+    volumes:
+      - "./db:/db"
+    environment:
+      - "DATABASE_URL=/db/db.sqlite3"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/backend`)"
+      - "traefik.http.routers.backend.service=backend-svc"
+      - "traefik.http.routers.backend.middlewares=backend-strip-prefix"
+      - "traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/backend"
+      - "traefik.http.services.backend-svc.loadbalancer.server.port=8080"
+    restart: unless-stopped
+
+  frontend:
+    build: frontend
+    container_name: "frontend"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.rule=!PathPrefix(`/backend`)"
+      - "traefik.http.routers.frontend.service=frontend-svc"
+      - "traefik.http.services.frontend-svc.loadbalancer.server.port=3000"
+    restart: unless-stopped
