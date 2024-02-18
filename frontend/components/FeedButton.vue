@@ -62,6 +62,7 @@ function holdEnd() {
 .feed-button-container {
   position: relative;
   width: 100%;
+  height: 46px;
 }
 
 .feed-button {

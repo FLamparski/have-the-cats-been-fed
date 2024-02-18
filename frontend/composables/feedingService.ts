@@ -1,9 +1,19 @@
-import { useMutation } from "@tanstack/vue-query";
-import axios from "axios";
+import { useQuery, useMutation } from "@tanstack/vue-query";
 
-export const useFeedMutation = function () {
+const queryKey = ['log'];
+
+export function useFeedingLogQuery() {
+    return useQuery({
+        queryKey,
+        queryFn: () => $fetch('/backend/log?size=1'),
+    })
+}
+
+export function useFeedMutation () {
+    const queryClient = useQueryClient();
   const { data: deviceId } = useDeviceId();
   return useMutation({
-    mutationFn: () => axios.post("/backend/log", { device_id: deviceId.value }),
+    mutationFn: () => $fetch('/backend/log', { method: 'POST', body: { device_id: deviceId.value } }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
 };
