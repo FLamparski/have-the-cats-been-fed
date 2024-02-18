@@ -1,0 +1,10 @@
+@use "~/assets/styles/variables/colours.scss" as colours;
+@use "~/assets/styles/variables/borders.scss" as borders;
+
+.input {
+  border-radius: borders.$borderRadiusMd;
+  border: 3px solid colours.$grey800;
+  padding: 6px 9px;
+  background-color: transparent;
+  color: #000000;
+}

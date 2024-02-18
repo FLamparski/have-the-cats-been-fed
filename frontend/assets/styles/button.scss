@@ -1,0 +1,22 @@
+@use "~/assets/styles/variables/colours.scss" as colours;
+@use "~/assets/styles/variables/borders.scss" as borders;
+
+.btn {
+  border-radius: borders.$borderRadiusMd;
+  border: 3px solid colours.$blue500;
+  padding: 6px 9px;
+  background-color: transparent;
+  color: colours.$blue500;
+  font-weight: 800;
+  cursor: pointer;
+
+  &:hover {
+    border-color: colours.$blue700;
+    color: colours.$blue700;
+  }
+
+  &:active {
+    border-color: colours.$blue800;
+    color: colours.$blue800;
+  }
+}

@@ -73,3 +73,5 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+Palette: https://www.tints.dev/?blue=1241D9&green=28B428&brand=2522FC&dkgreen=4E7C68&cyan=18E0E3&purple=4626C0&orange=B05406&pink=B78282&red=E16687&grey=808080
