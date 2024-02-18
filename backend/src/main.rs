@@ -1,6 +1,5 @@
 use axum::{
-    extract::State, http::StatusCode, routing::{get, post}, Router,
-    response::Json
+    extract::{Query, State}, http::StatusCode, response::Json, routing::{get, post}, Router
 };
 use diesel::prelude::*;
 use diesel::sqlite::Sqlite;
@@ -36,6 +35,11 @@ struct LogItemAppend {
 #[derive(serde::Serialize)]
 struct LogItemAppendResponse {
     status: String,
+}
+
+#[derive(serde::Deserialize)]
+struct Pagination {
+    size: i64,
 }
 
 #[tokio::main]
@@ -87,11 +91,18 @@ async fn root() -> &'static str {
 }
 
 async fn get_logs(
-    State(pool): State<deadpool_diesel::sqlite::Pool>
+    State(pool): State<deadpool_diesel::sqlite::Pool>,
+    Query(pagination): Query<Pagination>
 ) -> Result<Json<Vec<LogItem>>, (StatusCode, String)> {
     let conn = pool.get().await.map_err(internal_error)?;
     let res = conn
-        .interact(|conn| log_items::table.select(LogItem::as_select()).load(conn))
+        .interact(move |conn|
+            log_items::table
+            .select(LogItem::as_select())
+            .order_by(log_items::ts.desc())
+            .limit(pagination.size)
+            .load(conn)
+        )
         .await
         .map_err(internal_error)?
         .map_err(internal_error)?;
